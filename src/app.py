@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from scan_p53 import reader, get_allPWM, calculate_background, read_input, to_CSV
 from plots_hit import plot_motif_hits
 
-st.set_page_config(page_title="p53 Motif Scanner", layout="wide")
-st.title("p53 Motif Scanner")
+st.set_page_config(page_title="DNA Motif Scanner", layout="wide")
+st.title("DNA Motif Scanner")
 st.markdown("Upload a DNA sequence to scan for p53 binding sites using a statistical Position Weight Matrix (PWM).")
 
 with st.sidebar:
@@ -57,21 +57,18 @@ if st.button("Scan Sequence"):
                 st.success("Scan Complete!")
                 if os.path.exists(output_csv) and os.path.getsize(output_csv) > 0:
                     df = pd.read_csv(output_csv)
-                   
-                    
                     if not df.empty:
                         st.session_state['scan_results'] = df
                         st.session_state['unique_seqs'] = df["Sequence_ID"].unique()
-                        st.success("Scan Complete! Results stored.")
                     else:
                         st.warning(f"No binding sites found for {tf_name} with P < {p_value}")
-                        st.session_state['scan_results'] = pd.DataFrame() 
+                        st.session_state['scan_results'] = pd.DataFrame()   
                 else:
                     st.error("No results generated.")
                     
             except Exception as e:
                 st.error(f"An error occurred: {e}")
-                
+
 scan_results = st.session_state.get('scan_results')
 if st.session_state['scan_results'] is not None and not st.session_state['scan_results'].empty:
     
@@ -104,4 +101,3 @@ if st.session_state['scan_results'] is not None and not st.session_state['scan_r
             st.dataframe(df)
     csv_data = df.to_csv(index=False).encode('utf-8')
     st.download_button("Download All Results (CSV)", csv_data, f"{tf_name}_hits.csv", "text/csv")
-
