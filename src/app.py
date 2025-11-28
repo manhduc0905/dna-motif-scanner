@@ -70,10 +70,10 @@ if st.button("Scan Sequence"):
                 st.error(f"An error occurred: {e}")
 
 scan_results = st.session_state.get('scan_results')
-if scan_results:
+if if scan_results is not None and not scan_results.empty:
     
-    df = st.session_state['scan_results']
-    unique_seqs = st.session_state['unique_seqs']
+    df = scan_results
+    unique_seqs = st.session_state.get('unique_seqs')
     n_seqs = len(unique_seqs)
 
     st.divider()
@@ -101,3 +101,4 @@ if scan_results:
             st.dataframe(df)
     csv_data = df.to_csv(index=False).encode('utf-8')
     st.download_button("Download All Results (CSV)", csv_data, f"{tf_name}_hits.csv", "text/csv")
+
