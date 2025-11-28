@@ -60,35 +60,45 @@ if st.button("Scan Sequence"):
                    
                     
                     if not df.empty:
-                        unique_seqs = df["Sequence_ID"].unique()
-                        n_seqs = len(unique_seqs)
-                        st.success(f"Found {len(df)} binding sites across {n_seqs} sequences!")
-
-                        st.divider()
-                        st.subheader("Visualization")
-                        selected_seq = st.selectbox("Choose a Sequence to Inspect:", unique_seqs)
-                        
-                        subset_df = df[df["Sequence_ID"] == selected_seq]
-                        
-                        fig = plot_motif_hits(subset_df, seq_name=selected_seq)
-                        st.pyplot(fig)
-                        
-                        st.divider()
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            st.write(f"**Hits for {selected_seq}**")
-                            st.dataframe(subset_df)
-                        
-                        with col2:
-                            st.write("**All Hits (Summary)**")
-                            st.dataframe(df)
-
-                        with open(output_csv, "rb") as file:
-                            st.download_button("Download All Results (CSV)", file, f"{tf_name}_hits.csv")
+                        st.session_state['scan_results'] = df
+                        st.session_state['unique_seqs'] = df["Sequence_ID"].unique()
+                        st.success("Scan Complete! Results stored.")
                     else:
                         st.warning(f"No binding sites found for {tf_name} with P < {p_value}")
+                        st.session_state['scan_results'] = pd.DataFrame() 
                 else:
                     st.error("No results generated.")
                     
             except Exception as e:
                 st.error(f"An error occurred: {e}")
+if st.session_state['scan_results'] is not None and not st.session_state['scan_results'].empty:
+    
+    df = st.session_state['scan_results']
+    unique_seqs = st.session_state['unique_seqs']
+    n_seqs = len(unique_seqs)
+
+    st.divider()
+    st.success(f"Loaded {len(df)} binding sites across {n_seqs} sequences.")
+    
+    st.subheader("Visualization")
+    selected_seq = st.selectbox("Choose a Sequence to Inspect:", unique_seqs)
+    
+    if selected_seq:
+        subset_df = df[df["Sequence_ID"] == selected_seq]
+        try:
+            fig = plot_motif_hits(subset_df, seq_name=selected_seq)
+            st.pyplot(fig)
+        except Exception as e:
+            st.error(f"Error plotting sequence: {e}")
+        
+        st.divider()
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write(f"**Hits for {selected_seq}**")
+            st.dataframe(subset_df)
+        
+        with col2:
+            st.write("**All Hits (Summary)**")
+            st.dataframe(df)
+    csv_data = df.to_csv(index=False).encode('utf-8')
+    st.download_button("Download All Results (CSV)", csv_data, f"{tf_name}_hits.csv", "text/csv")
