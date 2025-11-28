@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 from scan_p53 import reader, get_allPWM, calculate_background, read_input, to_CSV
 from plots_hit import plot_motif_hits
 
-st.set_page_config(page_title="Motif Scanner", layout="wide")
-st.title("Motif Scanner")
-st.markdown("Upload a DNA sequence to scan for a choosen transcription factor binding sites using Position Weight Matrix (PWM).")
+st.set_page_config(page_title="p53 Motif Scanner", layout="wide")
+st.title("p53 Motif Scanner")
+st.markdown("Upload a DNA sequence to scan for p53 binding sites using a statistical Position Weight Matrix (PWM).")
 
 with st.sidebar:
     st.header("Settings")
@@ -57,16 +57,36 @@ if st.button("Scan Sequence"):
                 st.success("Scan Complete!")
                 if os.path.exists(output_csv) and os.path.getsize(output_csv) > 0:
                     df = pd.read_csv(output_csv)
-                    st.dataframe(df)
+                   
                     
                     if not df.empty:
+                        unique_seqs = df["Sequence_ID"].unique()
+                        n_seqs = len(unique_seqs)
+                        st.success(f"Found {len(df)} binding sites across {n_seqs} sequences!")
+
+                        st.divider()
                         st.subheader("Visualization")
-                        fig = plot_motif_hits(output_csv)
+                        selected_seq = st.selectbox("Choose a Sequence to Inspect:", unique_seqs)
+                        
+                        subset_df = df[df["Sequence_ID"] == selected_seq]
+                        
+                        fig = plot_motif_hits(subset_df, seq_name=selected_seq)
                         st.pyplot(fig)
+                        
+                        st.divider()
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.write(f"**Hits for {selected_seq}**")
+                            st.dataframe(subset_df)
+                        
+                        with col2:
+                            st.write("**All Hits (Summary)**")
+                            st.dataframe(df)
+
+                        with open(output_csv, "rb") as file:
+                            st.download_button("Download All Results (CSV)", file, f"{tf_name}_hits.csv")
                     else:
-                        st.warning("No hits found above the threshold.")
-                    with open(output_csv, "rb") as file:
-                        st.download_button("Download CSV", file, "motif_results.csv")
+                        st.warning(f"No binding sites found for {tf_name} with P < {p_value}")
                 else:
                     st.error("No results generated.")
                     

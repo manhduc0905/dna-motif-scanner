@@ -1,26 +1,25 @@
 import matplotlib.pyplot as plt
 import csv
+import pandas as pd
 import argparse
 
-def plot_motif_hits(csv_file):
+def plot_motif_hits(df, seq_name = "Sequence"):
     full_pos = []
     full_score = []
     half_pos  = []
     half_score = []
 
-    with open(csv_file, 'r') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            pos = int(row["Position"])
-            score = float(row["Score"])
-            site = int(row["Full/ Half-site"])
-            if (score > 0):
-                if site == 1:
-                    full_pos.append(pos)
-                    full_score.append(score)
-                else:
-                    half_pos.append(pos)
-                    half_score.append(score)
+    for ind, row in df.itterows():
+        pos = int(row["Position"])
+        score = float(row["Score"])
+        site = int(row["Full/ Half-site"])
+        if (score > 0):
+            if site == 1:
+                full_pos.append(pos)
+                full_score.append(score)
+            else:
+                half_pos.append(pos)
+                half_score.append(score)
     fig, ax =  plt.subplots(figsize=(12,8))
     ax.axhline(0, color = "black", linewidth = 1)
     if full_pos:
@@ -37,7 +36,7 @@ def plot_motif_hits(csv_file):
                 alpha = 0.3, 
                 label = "Half Site (Weak)",
                 zorder = 1)
-    ax.set_title("p53 Binding")
+    ax.set_title(f"Binding Sites on {seq_name}")
     ax.set_xlabel("Position in Sequence (bp)")
     ax.set_ylabel("Binding Score (Log-Odds Score)")
     ax.legend(loc = 'upper right')
