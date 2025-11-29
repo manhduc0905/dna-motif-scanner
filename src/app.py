@@ -8,7 +8,7 @@ from plots_hit import plot_motif_hits
 
 st.set_page_config(page_title="DNA Motif Scanner", layout="wide")
 st.title("DNA Motif Scanner")
-st.markdown("Upload a DNA sequence to scan for p53 binding sites using a statistical Position Weight Matrix (PWM).")
+st.markdown("Upload a DNA sequence to scan for optional transciption factor binding sites using a statistical Position Weight Matrix (PWM).")
 
 with st.sidebar:
     st.header("Settings")
@@ -101,5 +101,6 @@ if scan_results is not None and not scan_results.empty:
             st.dataframe(df)
     csv_data = df.to_csv(index=False).encode('utf-8')
     st.download_button("Download All Results (CSV)", csv_data, f"{tf_name}_hits.csv", "text/csv")
+
 
 
